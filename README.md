@@ -1,12 +1,16 @@
-# AWS Organization playgound
+# AWS Organizations playgound
 
-This repository is a sandbox to do some AWS Organization play and security control. 
+This repository is a sandbox to do some AWS Organizations studies with security control. 
 
-This is related to the IAM tutorial about delegating access across AWS accounts using IAM roles. 
+This is related to the IAM tutorial about delegating access across AWS accounts using IAM roles, and some customer's inquiries.
+
+An example of user story to address:
+
+> As a user part of the `devops` group, I want to access resources, like logs, from potentially thousand, customer accounts dynamically created by our platform so that I can support end users.
 
 ## Requirements
 
-* Create Organization with [AWS organizations CLI](https://docs.aws.amazon.com/cli/latest/reference/organizations/index.html#cli-aws-organizations) from my main account. An AWS Organization is a collection of AWS accounts that you can manage centrally. Use all organization features.
+* Create Organization with [AWS Organizations CLI](https://docs.aws.amazon.com/cli/latest/reference/organizations/index.html#cli-aws-organizations) from my main account. An AWS Organization is a collection of AWS accounts that you can manage centrally. Use all organization features.
 
     ```sh
     aws organizations create-organization
@@ -18,12 +22,12 @@ This is related to the IAM tutorial about delegating access across AWS accounts 
 
     ![](./docs/diagrams/orgs-sandbox.drawio.png)
 
+    **Figure 1: Organizations of accounts into different classes of customer**
+
     ```sh
     aws organizations create-organization-unit --parent-id o-cyxzj... --name Class-A
     aws organizations create-organization-unit --parent-id o-cyxzj... --name Class-B
     ```
-
-    
 
 * Create the new AWS accounts in the organization we want to grant access to the group of users.
 
@@ -31,15 +35,16 @@ This is related to the IAM tutorial about delegating access across AWS accounts 
     aws organizations create-account --email userid+1@amazon.com --account-name cust-A1
     aws organizations create-account --email userid+2@amazon.com --account-name cust-A2
     aws organizations create-account --email userid+3@amazon.com --account-name cust-B1
+    aws organizations create-account --email userid+3@amazon.com --account-name cust-B2
     aws organizations list-accounts 
     # move each accounts under the good OU with command like 
-    aws organizations describe-organizational-unit --organizational-unit-id ou-kxk2-9j73quif
+    aws organizations describe-organizational-unit --organizational-unit-id ou-kx...uif
     aws organizations move-account --account-id <value> --source-parent-id <value> --destination-parent-id <value>
     ```
 
     We can imagine to have thousand of accounts.
 
-    AWS automatically creates a IAM role in the accounts that grants administrator permissions to IAM users in the management account who can assume the role.
+    AWS Organizations automatically creates an IAM role in the account that grants administrator permissions to any IAM users in the management account who can assume the role.
 
     ![](./docs/org-acct-access.png)
 
@@ -162,7 +167,7 @@ This is related to the IAM tutorial about delegating access across AWS accounts 
 
 * Grant access to the Cross-Account IAM Role to the IAM Group that the group of users belong to.
 
-    * Create an inline policy to modify the permissin of the group:
+    * Create an inline policy to modify the permission of the group:
 
     ```json
     {
@@ -243,9 +248,31 @@ This is supported as in the `developer` group there is no permission to assume t
 
 ## Limitations of the IAM solution
 
-There are constraints of the number of roles in an account, and the number of character in a policy. Also for account created automatically by IaC scripts and with a short life cycle, the permission on the group may be update each time the account is deleted. 
+There are constraints for the number of character in a policy. As accounts may be created automatically by IaC scripts and with a short life cycle, the permission on the group may be update each time the account is deleted. 
 
-Some of those definitions can also centralized in the Organization via SCPs.
+When the number of account grows to thousand the policy to add permission to the IAM group will grow in size, as there is one entry per target role in target account. 
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "customer-1",
+            "Effect": "Allow",
+            "Action": "sts:AssumeRole",
+            "Resource": "arn:aws:iam::81....2:role/UpdateApp"
+        },
+        {
+            "Sid": "customer-2",
+            "Effect": "Allow",
+            "Action": "sts:AssumeRole",
+            "Resource": "arn:aws:iam::40...76:role/UpdateApp"
+        }, 
+        .... thousand roles
+    ]
+}
+```
+
 
 ## Using Service Control Policy in Organizations
 
