@@ -273,13 +273,18 @@ When the number of account grows to thousand the policy to add permission to the
 }
 ```
 
+if users are defined in Identity Center, it may be possible to leverage [Permission Sets](https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsetsconcept.html).
+
+! to be continued
 
 ## Using Service Control Policy in Organizations
 
-SCPs may be attached to the root, Organization Unit or AWS accounts. Using SCPs we can be sure newly created account as general permission setup.  
+SCPs may be attached to the root, Organization Unit or AWS accounts. Using SCPs, we can be sure newly created account has general permission setup. This is helpful to centrally manage policies within all the accounts of an organizations.  
 
 * Be sure to have enabled SCP in the management account.
-* Define a policy that let 
+
+! To be continued to demonstrate enforcing logging for example to CloudWatch or CloudTrail for any app deployed in accounts.
+
 
 ## Resources
 
@@ -289,3 +294,6 @@ SCPs may be attached to the root, Organization Unit or AWS accounts. Using SCPs 
 * [Managing multi-account AWS env with Organization - re:Inforce 2019](https://www.youtube.com/watch?v=fxo67UeeN1A)
 * [My summary of AWS security-Organizations.](https://jbcodeforce.github.io/aws-studies/infra/security/#aws-organizations)
 * [SCP examples](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps_examples_general.html)
+* [Permission sets product documentation.](https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsetsconcept.html)
+* [IAM object quotas.](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html#reference_iam-quotas-entities)
+* [Quotas for Organizations.](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
